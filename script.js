@@ -122,43 +122,42 @@ generateContent(API_KEY, model, conversation, function (error, replyText) {
         const xhr = new XMLHttpRequest;
         xhr.open('POST', url, true);
         xhr.setRequestHeader('Content-Type', 'application/json');
-
+        
         xhr.onreadystatechange = function(){
-            if(xhr.readyState === 4 ){
+           if(xhr.readyState === 4){
+            if(xhr.status >= 200 && xhr.staus < 300){
+                let data = JSON.parse(xhr.responseText);
+
+            }
+            catch(e){
+                callback('Respuesta no es un JSON valido.', null);
+                return;
+            }
+            let text = '';
+            if(data && data.candidates && data.candidates[0]){
+                let candidate = data.candidates[0];
+                if(candidate.content && candidate.context.parts && candidate.content.parts[0]){
+                    text = candidate.context.parts[0].text;
+                }
+            }
+            if(!text){
+                text = '(Sin contenido)';
+            }
+            else{
+                let error.Msg = `HTTP ${xhr.status}`;
                 try{
-                    data = JSON.parse(xhr.responseText);
+
+
+                
+                let errJson = JSON.parse(xhr.responseText);
+                if(errJson && errJson.error && errJson.error.message){
+                    errorMsg += `: ${errJson.error.message}`;
 
                 }
-                catch(e){
-                    callback('Respuesta no es con json valido', null);
-                    return;
-                }
-
-                let text = '';
-                if(data && data.candidates && data.candidates[0]){
-                    let candidate = data.candidate[0];
-                    if(candidate.content && candidate.content.parts[0]){
-                        text = candidate.content.parts[0];
-                    }
-                    if(!text){
-                        text = '(Sin contenido)';
-
-                    }
-                    callback (null, text);
-                }
-                else{
-                    let errorMsg = 'HTTP' + xhr.status;
-                    try{
-                        let errJson = JSON.parse(xhr.responseText);
-                        if(errJson && errJson.error && errJson.error.message){
-                            errorMsg += ': ' + errJson.error.message
-                        }
-                        }
-
-                        catch(e2){}
-                        callback(errorMsg, null);
-                    }
-                }
+            }
+            catch(e2){}
+            callback(errorMsg, null)
+           }
                 try{
                     xhr.send(JSON.stringify(payoad));
 
